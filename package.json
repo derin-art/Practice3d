@@ -12,7 +12,7 @@
     "@babel/core": "^7.20.12",
     "@react-spring/three": "^9.6.1",
     "@react-spring/web": "^9.6.1",
-    "@react-three/drei": "^9.56.8",
+    "@react-three/drei": "^9.78.2",
     "@react-three/fiber": "^8.10.1",
     "@reduxjs/toolkit": "^1.9.1",
     "@splinetool/loader": "^0.9.202",

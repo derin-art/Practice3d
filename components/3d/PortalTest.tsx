@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+
+import ny from "../../public/Hdri/Studio/ny.png";
+import nx from "../../public/Hdri/Studio/nx.png";
+import nz from "../../public/Hdri/Studio/nz.png";
+import px from "../../public/Hdri/Studio/px.png";
+import py from "../../public/Hdri/Studio/py.png";
+import pz from "../../public/Hdri/Studio/pz.png";
 import {
   OrbitControls,
   useGLTF,
@@ -9,10 +16,55 @@ import {
   Backdrop,
   MeshReflectorMaterial,
   MeshWobbleMaterial,
+  MeshRefractionMaterial,
+  SoftShadows,
 } from "@react-three/drei";
 import * as THREE from "three";
 import { AmbientLight, Object3D } from "three";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useLoader } from "@react-three/fiber";
+
+const RefractionObj = () => {
+  const [texture] = useLoader(THREE.CubeTextureLoader, [
+    "/Hdri/Studio/px.png",
+    "/Hdri/Studio/py.png",
+    "/Hdri/Studio/pz.png",
+    "/Hdri/Studio/nx.png",
+    "/Hdri/Studio/ny.png",
+    "/Hdri/Studio/nz.png",
+  ]);
+  return (
+    <group>
+      {" "}
+      {texture && (
+        <mesh>
+          <boxBufferGeometry args={[1, 1, 1]}></boxBufferGeometry>
+          <MeshRefractionMaterial envMap={texture} />
+        </mesh>
+      )}
+    </group>
+  );
+};
+const BetterRefractionObj = () => {
+  const [texture] = useLoader(THREE.RBGE, [
+    px.src,
+    py.src,
+    pz.src,
+    nx.src,
+    ny.src,
+    nz.src,
+  ]);
+  return (
+    <group>
+      {" "}
+      {texture && (
+        <mesh>
+          <boxBufferGeometry args={[1, 1, 1]}></boxBufferGeometry>
+          <MeshRefractionMaterial envMap={texture} />
+        </mesh>
+      )}
+    </group>
+  );
+};
 
 const DirectionalLight = (props: {
   pos?: [x: number, y: number, z: number];
@@ -29,7 +81,7 @@ const DirectionalLight = (props: {
 };
 
 const SilverHand = () => {
-  const Hand = useGLTF("/Hand.glb");
+  const Hand = useGLTF("/Untitled2.glb");
   const groupRef: any = useRef<THREE.Group>(null);
   return (
     <Float
@@ -39,10 +91,11 @@ const SilverHand = () => {
       floatingRange={[1, 1.5]}
     >
       <group ref={groupRef}>
-        <DirectionalLight pos={[0, 7, 0]}></DirectionalLight>
+        {/*    <DirectionalLight pos={[0, 7, 0]}></DirectionalLight>
         <DirectionalLight pos={[6, 0, 0]}></DirectionalLight>
         <DirectionalLight pos={[-4, 0, 0]}></DirectionalLight>
-        <DirectionalLight pos={[0, -8, 0]}></DirectionalLight>
+        <DirectionalLight pos={[0, -8, 0]}></DirectionalLight> */}
+        <ambientLight></ambientLight>
         <primitive object={Hand.scene}></primitive>
       </group>
     </Float>
@@ -118,13 +171,14 @@ const WobbleObj = () => {
 
 export default function PortalTest() {
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-screen bg-black">
       <Canvas>
         <OrbitControls></OrbitControls>
         <Backdrop floor={2} segments={40} receiveShadow={{}}>
           <meshNormalMaterial></meshNormalMaterial>
         </Backdrop>{" "}
-        <WobbleObj></WobbleObj>
+        <SilverHand></SilverHand>
+        <SoftShadows></SoftShadows>
       </Canvas>
     </div>
   );

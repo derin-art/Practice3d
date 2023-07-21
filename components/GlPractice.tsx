@@ -184,6 +184,88 @@ const Plane = (props: {
   );
 };
 
+const MouseShader = shaderMaterial(
+  {
+    uMouse: new THREE.Vector2(0.0, 0.0),
+    uTexture: new THREE.Texture(),
+    uTexture2: new THREE.DataTexture(),
+  },
+  //Vertex Shader
+  glsl`
+  precision mediump float;
+  varying vec2 v_uv;
+  void main(){
+    vec4 modelPosition = vec4(position, 1.0) * modelMatrix;
+    gl_Position = projectionMatrix * viewMatrix * modelPosition;
+    v_uv  = uv;
+  }
+  `,
+  //Fragment Shader
+  glsl`
+  precision mediump float;
+  varying vec2 v_uv;
+  uniform sampler2D uTexture;
+  uniform sampler2D uTexture2;
+  vec4 sRGBToLinear( in vec4 value ) {
+	return vec4( mix( pow( value.rgb * 0.9478672986 + vec3( 0.0121327014 ), vec3( 0.5 ) ), value.rgb * 0.0773993808, vec3( lessThanEqual( value.rgb, vec3( 0.00845 ) ) ) ), value.a );
+}
+
+  void main(){
+    vec4 color = texture2D(uTexture, v_uv);
+        vec4 offset = texture2D(uTexture2,v_uv);
+    vec4 texture = texture2D(uTexture, v_uv - 3.0 * offset.rg);
+
+    
+    texture = sRGBToLinear(texture);
+    gl_FragColor = texture;
+    
+  }
+  `
+);
+
+extend({ MouseShader });
+
+const MouseDistortPlane = () => {
+  const shaderRef = useRef<THREE.ShaderMaterial>();
+  const [texture] = useLoader(THREE.TextureLoader, [A10.src]);
+
+  const size = 34 * 34;
+  const data = new Float32Array(3 * size);
+
+  for (let i = 0; i < size; i++) {
+    const stride = i * 3;
+    let r = Math.random() * 255;
+    let r1 = Math.random() * 255;
+
+    data[stride] = r; // red, and also X
+    data[stride + 1] = r1; // green, and also Y
+    data[stride + 2] = r; // blue
+  }
+  const texture2 = new THREE.DataTexture(
+    data,
+    34,
+    34,
+    THREE.RGBAFormat,
+    THREE.FloatType
+  );
+  useEffect(() => {
+    texture2.magFilter = texture2.magFilter = THREE.NearestFilter;
+    if (shaderRef.current && texture) {
+      console.log(shaderRef.current?.uniforms);
+    }
+  }, []);
+  return (
+    <mesh position={[0, 0, 0]}>
+      <mouseShader
+        ref={shaderRef}
+        uTexture2={texture2}
+        uTexture={texture}
+      ></mouseShader>
+      <planeBufferGeometry args={[3, 4]}></planeBufferGeometry>
+    </mesh>
+  );
+};
+
 export default function GlPractice() {
   const [res, setRes] = useState({ x: 0, y: 0 });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -219,7 +301,8 @@ export default function GlPractice() {
       <Canvas dpr={2.0} className="border w-full h-screen border">
         <OrbitControls></OrbitControls>
         <Suspense>
-          <Plane mousePos={mousePos} screenSize={res}></Plane>
+          {/*           <Plane mousePos={mousePos} screenSize={res}></Plane> */}
+          <MouseDistortPlane></MouseDistortPlane>
         </Suspense>
       </Canvas>
     </div>

@@ -4,13 +4,37 @@ import { motion as m } from "framer-motion-3d";
 import { Canvas, extend } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { OrbitControls, useGLTF, useHelper } from "@react-three/drei";
+import {
+  OrbitControls,
+  useGLTF,
+  useHelper,
+  MeshTransmissionMaterial,
+} from "@react-three/drei";
 import { gsap } from "gsap";
 
 function Gun() {
   const Gun = useGLTF("/PossibleHand.glb");
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const groupRef = useRef<THREE.Group>();
+
+  var modelTwo = Gun.scene;
+  let geoMet;
+  console.log(modelTwo);
+  var newMaterial = new THREE.MeshPhysicalMaterial({
+    color: "silver",
+    metalness: 0.7,
+    roughness: 0.4,
+    side: THREE.DoubleSide,
+    reflectivity: 1,
+  });
+  modelTwo.traverse((o: any) => {
+    if (o.isMesh) {
+      o.material = newMaterial;
+      geoMet = o.geometry;
+    }
+  });
+
+  console.log(geoMet);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -25,10 +49,10 @@ function Gun() {
 
       window.addEventListener("mousemove", (e) => {
         /*     console.log("Y", (e.clientY / window.innerHeight) * 2 + 1); */
-        console.log(
+        /*   console.log(
           "X",
           (1 - e.clientX / window.innerWidth + 1 * 180) / Math.PI
-        );
+        ); */
         animateGun(
           1 - (e.clientX / window.innerWidth) * 2,
           1 - (e.clientY / window.innerHeight) * 0.8
@@ -58,6 +82,12 @@ function Gun() {
 
   return (
     <m.group position={[0, 0, -5]} ref={groupRef}>
+      <mesh position={[-3, 0, 0]} geometry={geoMet}>
+        <MeshTransmissionMaterial
+          distortionScale={2}
+          temporalDistortion={1}
+        ></MeshTransmissionMaterial>
+      </mesh>
       <primitive object={Gun.scene}></primitive>
     </m.group>
   );
@@ -82,6 +112,7 @@ export default function FinalCanvas() {
       </div>
       <Canvas className="fixed  h-screen w-full">
         <axesHelper></axesHelper>
+        <ambientLight></ambientLight>
         <Gun></Gun>
       </Canvas>
     </div>

@@ -81,7 +81,22 @@ const DirectionalLight = (props: {
 };
 
 const SilverHand = () => {
-  const Hand = useGLTF("/Untitled2.glb");
+  const Hand = useGLTF("/Chain.glb");
+  const newMaterial = new THREE.MeshPhysicalMaterial({
+    color: "silver",
+    metalness: 0.7,
+    specularIntensity: 20,
+  });
+  console.log(Hand.scene);
+  Hand.scene.traverse((o: any) => {
+    if (o.isMesh) {
+      const match = o.name === "Cube003";
+      if (match) {
+        console.log(o, "heeyyy");
+        o.material = newMaterial;
+      }
+    }
+  });
   const groupRef: any = useRef<THREE.Group>(null);
   return (
     <Float
@@ -91,10 +106,10 @@ const SilverHand = () => {
       floatingRange={[1, 1.5]}
     >
       <group ref={groupRef}>
-        {/*    <DirectionalLight pos={[0, 7, 0]}></DirectionalLight>
+        <DirectionalLight pos={[0, 7, 0]}></DirectionalLight>
         <DirectionalLight pos={[6, 0, 0]}></DirectionalLight>
         <DirectionalLight pos={[-4, 0, 0]}></DirectionalLight>
-        <DirectionalLight pos={[0, -8, 0]}></DirectionalLight> */}
+        <DirectionalLight pos={[0, -8, 0]}></DirectionalLight>
         <ambientLight></ambientLight>
         <primitive object={Hand.scene}></primitive>
       </group>
@@ -171,7 +186,7 @@ const WobbleObj = () => {
 
 export default function PortalTest() {
   return (
-    <div className="w-full h-screen bg-black">
+    <div className="w-full h-screen ">
       <Canvas>
         <OrbitControls></OrbitControls>
         <Backdrop floor={2} segments={40} receiveShadow={{}}>

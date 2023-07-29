@@ -18,10 +18,15 @@ import {
   MeshWobbleMaterial,
   MeshRefractionMaterial,
   SoftShadows,
+  Edges,
 } from "@react-three/drei";
 import * as THREE from "three";
 import { AmbientLight, Object3D } from "three";
 import { Canvas, useLoader } from "@react-three/fiber";
+import displacement from "../../public/TestImages/displacement.jpg";
+import displacement1 from "../../public/TestImages/displacement1.jpg";
+import metal from "../../public/TestImages/metal.jpg";
+import color from "../../public/TestImages/color.jpg";
 
 const RefractionObj = () => {
   const [texture] = useLoader(THREE.CubeTextureLoader, [
@@ -81,16 +86,33 @@ const DirectionalLight = (props: {
 };
 
 const SilverHand = () => {
-  const Hand = useGLTF("/Chain.glb");
+  const Hand = useGLTF("/Jewel.glb");
+  const [map1]: any = useLoader(THREE.TextureLoader, [displacement.src]);
+  const [map]: any = useLoader(THREE.TextureLoader, [displacement1.src]);
+  const [map2]: any = useLoader(THREE.TextureLoader, [metal.src]);
+  const [map3]: any = useLoader(THREE.TextureLoader, [color.src]);
   const newMaterial = new THREE.MeshPhysicalMaterial({
-    color: "silver",
-    metalness: 0.7,
+    metalness: 0.8,
     specularIntensity: 20,
+    roughness: 0.7,
+    roughnessMap: map1,
+    bumpMap: map2,
+    displacementScale: 0.1,
+    bumpScale: 0.1,
+    map: map3,
+  });
+  const secondaryMat = new THREE.MeshPhongMaterial({
+    color: "red",
+    specular: 0.1,
+
+    shininess: 10,
+
+    emissiveIntensity: 1,
   });
   console.log(Hand.scene);
   Hand.scene.traverse((o: any) => {
     if (o.isMesh) {
-      const match = o.name === "Cube003";
+      const match = o.name === "case";
       if (match) {
         console.log(o, "heeyyy");
         o.material = newMaterial;
@@ -111,6 +133,7 @@ const SilverHand = () => {
         <DirectionalLight pos={[-4, 0, 0]}></DirectionalLight>
         <DirectionalLight pos={[0, -8, 0]}></DirectionalLight>
         <ambientLight></ambientLight>
+        <Edges></Edges>
         <primitive object={Hand.scene}></primitive>
       </group>
     </Float>
